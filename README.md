@@ -95,7 +95,7 @@ Voir `.env.example`. **Aucun secret dans le code ni dans les exports n8n.**
 2. ✅ Schéma Convex (users, tools, borrowRequests, automationEvents) + sync user
 3. ✅ Backend outils (CRUD + listes publique/connectée + permissions)
 4. ✅ Backend demandes d’emprunt (créer / accepter / refuser / rendu)
-5. Feature admin backend
+5. ✅ Backend admin (tous prêts, trustedLender, suppression globale)
 6. Front feature par feature
 7. Automatisations n8n + HMAC + idempotence
 8. README final + note prod
