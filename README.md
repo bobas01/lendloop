@@ -93,10 +93,11 @@ Voir `.env.example`. **Aucun secret dans le code ni dans les exports n8n.**
 
 1. ✅ Init stack + premier push
 2. ✅ Schéma Convex (users, tools, borrowRequests, automationEvents) + sync user
-3. Features backend une par une (outils → demandes → admin)
-4. Front feature par feature
-5. Automatisations n8n + HMAC + idempotence
-6. README final + note prod
+3. ✅ Backend outils (CRUD + listes publique/connectée + permissions)
+4. Features backend suivantes (demandes d’emprunt → admin)
+5. Front feature par feature
+6. Automatisations n8n + HMAC + idempotence
+7. README final + note prod
 
 ## Licence
 
