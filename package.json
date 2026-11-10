@@ -5,12 +5,14 @@
   "scripts": {
     "dev": "next dev",
     "dev:frontend": "next dev",
-    "dev:backend": "convex dev",
+    "dev:backend": "node scripts/convex-dev.mjs dev",
+    "convex:issuer": "node scripts/set-clerk-jwt-issuer.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "n8n:up": "docker compose up -d",
-    "n8n:down": "docker compose down"
+    "n8n:down": "docker compose down",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.9.25",
@@ -26,6 +28,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
+    "patch-package": "^8.0.1",
     "tailwindcss": "4.3.3",
     "typescript": "^5"
   }

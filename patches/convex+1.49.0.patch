@@ -1,0 +1,25 @@
+diff --git a/node_modules/convex/dist/cli.bundle.cjs b/node_modules/convex/dist/cli.bundle.cjs
+index c7f6c6d..54b8397 100644
+--- a/node_modules/convex/dist/cli.bundle.cjs
++++ b/node_modules/convex/dist/cli.bundle.cjs
+@@ -136541,7 +136541,8 @@ async function componentGraph(ctx, absWorkingDir, rootComponentDirectory, liveCo
+     result = await import_esbuild2.default.build({
+       absWorkingDir,
+       // This is mostly useful for formatting error messages.
+-      entryPoints: [qualifiedDefinitionPath(rootComponentDirectory)],
++      // Absolute path: relative + outbase=drive-root breaks on Windows (esbuild drops folders).
++      entryPoints: [rootComponentDirectory.definitionPath],
+       plugins: [
+         componentPlugin({
+           ctx,
+@@ -136665,8 +136666,9 @@ async function bundleDefinitions(ctx, absWorkingDir, dependencyGraph, rootCompon
+     }
+     result = await import_esbuild2.default.build({
+       absWorkingDir,
++      // Absolute path: relative + outbase=drive-root breaks on Windows (esbuild drops folders).
+       entryPoints: componentDirectories.map(
+-        (dir) => qualifiedDefinitionPath(dir)
++        (dir) => dir.definitionPath
+       ),
+       plugins: plugins2,
+       sourcemap: true,
