@@ -37,19 +37,23 @@ cp .env.example .env.local
 
 Astuce : `npx clerk init --framework next -y` peut aussi écrire les clés en local.
 
-### 2. Convex
+### 2. Convex (obligatoire pour le backend)
 
 ```bash
 npx convex dev
 ```
 
-Suivre le login GitHub, créer le projet. Convex écrira `NEXT_PUBLIC_CONVEX_URL` dans `.env.local`.
-
-Dans le dashboard Convex → Environment Variables :
+1. Login GitHub, créer le projet LendLoop  
+2. Convex écrit `NEXT_PUBLIC_CONVEX_URL` dans `.env.local` et régénère `convex/_generated`  
+3. Dans le dashboard Convex → Environment Variables :
 
 ```text
 CLERK_JWT_ISSUER_DOMAIN=https://ton-frontend-api.clerk.accounts.dev
 ```
+
+4. Dans Clerk → activer l’intégration Convex (JWT template / integration)
+
+Sans cette étape, le front tourne mais les appels Convex ne fonctionnent pas.
 
 ### 3. Lancer l’app
 
@@ -85,7 +89,7 @@ Voir `.env.example`. **Aucun secret dans le code ni dans les exports n8n.**
 ## Roadmap courte
 
 1. ✅ Init stack + premier push
-2. Schéma Convex (users, tools, borrowRequests, automationEvents)
+2. ✅ Schéma Convex (users, tools, borrowRequests, automationEvents) + sync user
 3. Features backend une par une (outils → demandes → admin)
 4. Front feature par feature
 5. Automatisations n8n + HMAC + idempotence

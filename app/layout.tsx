@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, Geist_Mono } from "next/font/google";
 import ConvexClientProvider from "@/components/ConvexClientProvider";
+import EnsureUser from "@/components/EnsureUser";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,7 +28,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <ClerkProvider>
-          <ConvexClientProvider>{children}</ConvexClientProvider>
+          <ConvexClientProvider>
+            {process.env.NEXT_PUBLIC_CONVEX_URL ? <EnsureUser /> : null}
+            {children}
+          </ConvexClientProvider>
         </ClerkProvider>
       </body>
     </html>
