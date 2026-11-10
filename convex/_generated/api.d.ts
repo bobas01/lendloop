@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as borrowRequests from "../borrowRequests.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_validators from "../lib/validators.js";
 import type * as tools from "../tools.js";
@@ -20,6 +21,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  borrowRequests: typeof borrowRequests;
   "lib/auth": typeof lib_auth;
   "lib/validators": typeof lib_validators;
   tools: typeof tools;
