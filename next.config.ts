@@ -1,9 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  // Désactivé : ConvexReactClient + useQuery ne passent pas le prerender
+  // strict de cacheComponents (Math.random / absence de provider SSR).
+  cacheComponents: false,
   turbopack: {
     rules: {
       "*.css": {

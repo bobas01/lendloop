@@ -4,6 +4,7 @@ import { useAuth } from "@clerk/nextjs";
 import { ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { ReactNode, useMemo } from "react";
+import EnsureUser from "@/components/EnsureUser";
 
 type Props = {
   children: ReactNode;
@@ -11,8 +12,6 @@ type Props = {
 
 /**
  * Relie Clerk (auth) à Convex (backend).
- * Sans NEXT_PUBLIC_CONVEX_URL, on laisse passer les enfants pour permettre
- * le démarrage local avant la config Convex.
  */
 export default function ConvexClientProvider({ children }: Props) {
   const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
@@ -28,6 +27,7 @@ export default function ConvexClientProvider({ children }: Props) {
 
   return (
     <ConvexProviderWithClerk client={client} useAuth={useAuth}>
+      <EnsureUser />
       {children}
     </ConvexProviderWithClerk>
   );

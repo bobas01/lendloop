@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, Manrope } from "next/font/google";
 import ConvexClientProvider from "@/components/ConvexClientProvider";
-import EnsureUser from "@/components/EnsureUser";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const display = Fraunces({
+  variable: "--font-display",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const body = Manrope({
+  variable: "--font-body",
   subsets: ["latin"],
 });
 
@@ -24,14 +23,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="fr"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${display.variable} ${body.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <ClerkProvider>
-          <ConvexClientProvider>
-            {process.env.NEXT_PUBLIC_CONVEX_URL ? <EnsureUser /> : null}
-            {children}
-          </ConvexClientProvider>
+          <ConvexClientProvider>{children}</ConvexClientProvider>
         </ClerkProvider>
       </body>
     </html>
