@@ -65,8 +65,8 @@ npm run dev
 npm run dev:backend
 ```
 
-> **Windows / WAMP :** le dossier `C:\wamp64\www\lendloop` est souvent un junction vers `D:\www\lendloop`.  
-> Utilise toujours `npm run dev:backend` (pas `npx convex dev` brut) : le script se place sur le chemin réel, sinon Convex plante.
+> **Windows / WAMP :** `C:\wamp64\www\lendloop` est un junction vers `D:\www\lendloop`.  
+> Utilise toujours `npm run dev` / `npm run dev:backend` (jamais `next dev` / `npx convex dev` bruts depuis le chemin C:), sinon chemins cassés et erreur 500.
 
 ### 4. n8n (plus tard)
 
