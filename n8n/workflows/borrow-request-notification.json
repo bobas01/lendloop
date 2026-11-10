@@ -1,0 +1,64 @@
+{
+  "name": "LendLoop - Borrow request notification",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lendloop-borrow-events",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-borrow",
+      "name": "Webhook Borrow Events",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "lendloop-borrow-events"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\nconst secret = $env.LENDLOOP_HMAC_SECRET || $env.N8N_SHARED_SECRET;\nif (!secret) { throw new Error('LENDLOOP_HMAC_SECRET manquant'); }\n\nconst headers = $input.first().json.headers || {};\nconst ts = headers['x-lendloop-timestamp'] || headers['X-LendLoop-Timestamp'];\nconst sig = (headers['x-lendloop-signature'] || headers['X-LendLoop-Signature'] || '').toLowerCase();\nconst body = typeof $input.first().json.body === 'string'\n  ? $input.first().json.body\n  : JSON.stringify($input.first().json.body ?? $input.first().json);\n\nif (!ts || !sig) { throw new Error('Headers HMAC manquants'); }\nconst skew = Math.abs(Date.now() - Number(ts));\nif (skew > 5 * 60 * 1000) { throw new Error('Timestamp hors fenêtre'); }\n\nconst expected = crypto.createHmac('sha256', secret).update(`${ts}.${body}`).digest('hex');\nif (expected !== sig) { throw new Error('Signature invalide'); }\n\nconst payload = typeof $input.first().json.body === 'object'\n  ? $input.first().json.body\n  : JSON.parse(body);\n\nreturn [{ json: { ok: true, verified: true, payload, receivedAt: new Date().toISOString() } }];"
+      },
+      "id": "verify-hmac",
+      "name": "Verify HMAC",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [260, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Fausse notification : on logue clairement (email/Slack optionnels ensuite)\nconst p = $json.payload;\nconst line = `[LendLoop] ${p.eventType} status=${p.status} tool=${p.toolName} to=${p.notifyEmail} key=${p.idempotencyKey}`;\nconsole.log(line);\nreturn [{ json: { ...($json), notification: line } }];"
+      },
+      "id": "fake-notify",
+      "name": "Log Notification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [520, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, notification: $json.notification } }}",
+        "options": {}
+      },
+      "id": "respond",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [780, 0]
+    }
+  ],
+  "connections": {
+    "Webhook Borrow Events": {
+      "main": [[{ "node": "Verify HMAC", "type": "main", "index": 0 }]]
+    },
+    "Verify HMAC": {
+      "main": [[{ "node": "Log Notification", "type": "main", "index": 0 }]]
+    },
+    "Log Notification": {
+      "main": [[{ "node": "Respond OK", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": { "templateCredsSetupCompleted": true }
+}

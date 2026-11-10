@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { isOwner, requireUser } from "./lib/auth";
 
 const MAX_REQUESTS = 100;
@@ -79,8 +80,11 @@ export const create = mutation({
       reminderCount: 0,
     });
 
-    // TODO (feature n8n) : appeler le webhook de notification ici
-    // (création + plus tard aussi sur accept/reject/returned)
+    await ctx.scheduler.runAfter(0, internal.automation.dispatchBorrowEvent, {
+      requestId,
+      status: "pending",
+      eventType: "borrow_notification",
+    });
 
     return requestId;
   },
@@ -123,6 +127,12 @@ export const accept = mutation({
     await ctx.db.patch(request._id, { status: "accepted" });
     await ctx.db.patch(tool._id, { status: "lent" });
 
+    await ctx.scheduler.runAfter(0, internal.automation.dispatchBorrowEvent, {
+      requestId: request._id,
+      status: "accepted",
+      eventType: "status_notification",
+    });
+
     return request._id;
   },
 });
@@ -145,6 +155,13 @@ export const reject = mutation({
     }
 
     await ctx.db.patch(request._id, { status: "rejected" });
+
+    await ctx.scheduler.runAfter(0, internal.automation.dispatchBorrowEvent, {
+      requestId: request._id,
+      status: "rejected",
+      eventType: "status_notification",
+    });
+
     return request._id;
   },
 });
@@ -175,6 +192,12 @@ export const markReturned = mutation({
     if (tool && tool.status !== "removed") {
       await ctx.db.patch(tool._id, { status: "available" });
     }
+
+    await ctx.scheduler.runAfter(0, internal.automation.dispatchBorrowEvent, {
+      requestId: request._id,
+      status: "returned",
+      eventType: "status_notification",
+    });
 
     return request._id;
   },

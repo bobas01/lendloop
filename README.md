@@ -97,7 +97,7 @@ Voir `.env.example`. **Aucun secret dans le code ni dans les exports n8n.**
 4. ✅ Backend demandes d’emprunt (créer / accepter / refuser / rendu)
 5. ✅ Backend admin (tous prêts, trustedLender, suppression globale)
 6. ✅ Front (page publique + espace connecté + admin UI)
-7. Automatisations n8n + HMAC + idempotence
+7. ✅ Automatisations n8n + HMAC + idempotence
 8. README final + note prod
 
 ## Licence

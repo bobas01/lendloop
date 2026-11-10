@@ -1,0 +1,124 @@
+{
+  "name": "LendLoop - Overdue loan reminders",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 9 * * *" }]
+        }
+      },
+      "id": "cron-daily",
+      "name": "Every day 09:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\nconst secret = $env.LENDLOOP_HMAC_SECRET || $env.N8N_SHARED_SECRET;\nconst site = $env.CONVEX_SITE_URL;\nif (!secret || !site) throw new Error('LENDLOOP_HMAC_SECRET et CONVEX_SITE_URL requis');\nconst ts = String(Date.now());\nconst body = '';\nconst signature = crypto.createHmac('sha256', secret).update(`${ts}.${body}`).digest('hex');\nreturn [{ json: { url: `${site.replace(/\\/$/, '')}/overdue-loans`, ts, signature, secret } }];"
+      },
+      "id": "sign-get",
+      "name": "Sign GET overdue",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 0]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {
+          "timeout": 30000
+        },
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-LendLoop-Timestamp", "value": "={{ $json.ts }}" },
+            { "name": "X-LendLoop-Signature", "value": "={{ $json.signature }}" }
+          ]
+        }
+      },
+      "id": "http-overdue",
+      "name": "GET Overdue Loans",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const loans = $json.loans || [];\nconst day = new Date().toISOString().slice(0, 10);\nreturn loans.map((loan) => ({\n  json: {\n    ...loan,\n    idempotencyKey: `overdue_reminder:${loan.requestId}:${day}`,\n    reminderLine: `[LendLoop] RAPPEL retard tool=${loan.toolName} to=${loan.borrowerEmail}`\n  }\n}));"
+      },
+      "id": "split-loans",
+      "name": "Prepare reminders",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [720, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "console.log($json.reminderLine);\nreturn [{ json: $json }];"
+      },
+      "id": "log-reminder",
+      "name": "Log Reminder",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [960, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\nconst secret = $env.LENDLOOP_HMAC_SECRET || $env.N8N_SHARED_SECRET;\nconst site = $env.CONVEX_SITE_URL;\nconst bodyObj = {\n  requestId: $json.requestId,\n  idempotencyKey: $json.idempotencyKey,\n  message: $json.reminderLine,\n};\nconst body = JSON.stringify(bodyObj);\nconst ts = String(Date.now());\nconst signature = crypto.createHmac('sha256', secret).update(`${ts}.${body}`).digest('hex');\nreturn [{ json: { url: `${site.replace(/\\/$/, '')}/reminders/ack`, ts, signature, body, bodyObj } }];"
+      },
+      "id": "sign-ack",
+      "name": "Sign ACK",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1200, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.url }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.bodyObj }}",
+        "options": {
+          "timeout": 30000
+        },
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-LendLoop-Timestamp", "value": "={{ $json.ts }}" },
+            { "name": "X-LendLoop-Signature", "value": "={{ $json.signature }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        }
+      },
+      "id": "http-ack",
+      "name": "POST reminders/ack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1440, 0],
+      "retryOnFail": true,
+      "maxTries": 3
+    }
+  ],
+  "connections": {
+    "Every day 09:00": {
+      "main": [[{ "node": "Sign GET overdue", "type": "main", "index": 0 }]]
+    },
+    "Sign GET overdue": {
+      "main": [[{ "node": "GET Overdue Loans", "type": "main", "index": 0 }]]
+    },
+    "GET Overdue Loans": {
+      "main": [[{ "node": "Prepare reminders", "type": "main", "index": 0 }]]
+    },
+    "Prepare reminders": {
+      "main": [[{ "node": "Log Reminder", "type": "main", "index": 0 }]]
+    },
+    "Log Reminder": {
+      "main": [[{ "node": "Sign ACK", "type": "main", "index": 0 }]]
+    },
+    "Sign ACK": {
+      "main": [[{ "node": "POST reminders/ack", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": { "templateCredsSetupCompleted": true }
+}

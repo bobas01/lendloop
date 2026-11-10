@@ -13,7 +13,9 @@ services:
       - WEBHOOK_URL=http://localhost:5678/
       - GENERIC_TIMEZONE=Europe/Paris
       # Secrets : à surcharger via un fichier .env local (jamais commités)
-      - LENDLOOP_HMAC_SECRET=${N8N_WEBHOOK_SECRET:-change-me-shared-hmac-secret}
+      - LENDLOOP_HMAC_SECRET=${N8N_SHARED_SECRET:-change-me-shared-hmac-secret}
+      - N8N_SHARED_SECRET=${N8N_SHARED_SECRET:-change-me-shared-hmac-secret}
+      - CONVEX_SITE_URL=${NEXT_PUBLIC_CONVEX_SITE_URL:-}
     volumes:
       - n8n_data:/home/node/.n8n
 
